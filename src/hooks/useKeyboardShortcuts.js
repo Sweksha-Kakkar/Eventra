@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 const useKeyboardShortcuts = ({
   onOpenHelp,
   onCloseHelp,
+  onOpenCreateEvent, // Naya function 'N' key ke liye
+  onFocusSearch,     // Naya function '/' key ke liye
 }) => {
   const navigate = useNavigate();
   const keyBuffer = useRef([]);
@@ -16,23 +18,39 @@ const useKeyboardShortcuts = ({
         active &&
         ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName);
 
-      if (isTyping) return;
+      // Agar user type kar raha hai toh shortcuts skip karo, BUT Escape ko allow karo close karne ke liye
+      if (isTyping && e.key !== "Escape") return;
 
-      // Open modal
+      // 1. Open Help Modal (Shift + ?)
       if (e.shiftKey && e.key === "?") {
         e.preventDefault();
-        onOpenHelp();
+        if (onOpenHelp) onOpenHelp();
         return;
       }
 
-      // Close modal
+      // 2. Close Modal (Escape)
       if (e.key === "Escape") {
         e.preventDefault();
-        onCloseHelp();
+        if (onCloseHelp) onCloseHelp();
         keyBuffer.current = [];
         return;
       }
 
+      // 3. Open Create Event Modal (Single key 'n' ya 'N')
+      if (e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        if (onOpenCreateEvent) onOpenCreateEvent();
+        return;
+      }
+
+      // 4. Focus Search Bar (Single key '/')
+      if (e.key === "/") {
+        e.preventDefault();
+        if (onFocusSearch) onFocusSearch();
+        return;
+      }
+
+      // Sequence combos (g + h, g + l, etc.)
       keyBuffer.current.push(e.key.toLowerCase());
 
       if (keyBuffer.current.length > 2) {
@@ -62,7 +80,7 @@ const useKeyboardShortcuts = ({
     return () => {
       document.removeEventListener("keydown", handler);
     };
-  }, [navigate, onOpenHelp, onCloseHelp]);
+  }, [navigate, onOpenHelp, onCloseHelp, onOpenCreateEvent, onFocusSearch]);
 };
 
 export default useKeyboardShortcuts;

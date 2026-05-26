@@ -19,10 +19,12 @@ import MobileNavbar from "./MobileNavbar";
 import CursorToggle from "./CursorToggle";
 
 import useBodyScrollLock from "./hooks/useBodyScrollLock";
+import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts"; // Naya hook import kiya
 
 const Navbar = ({
   cursorEnabled,
   toggleCursor,
+  onOpenCreateEvent, // Parent component se agar modal open karne ka function aaye
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -33,6 +35,26 @@ const Navbar = ({
   const { isDarkMode, toggleTheme } = useTheme();
 
   useBodyScrollLock(isMobileMenuOpen);
+
+  // Keyboard Shortcuts Hook ko connect kiya
+  useKeyboardShortcuts({
+    onOpenHelp: () => console.log("Help modal requested via keyboard"),
+    onCloseHelp: () => console.log("Close help modal via keyboard"),
+    onOpenCreateEvent: () => {
+      if (onOpenCreateEvent) {
+        onOpenCreateEvent();
+      } else {
+        console.log("N key pressed: Create Event Action Triggered");
+      }
+    },
+    onFocusSearch: () => {
+      // Global search bar element ko dhoondh kar focus karega
+      const searchInput = document.querySelector('input[type="search"]') || document.querySelector('input[placeholder*="search" i]');
+      if (searchInput) {
+        searchInput.focus();
+      }
+    }
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,6 +72,8 @@ const Navbar = ({
     <>
       <nav
         ref={navRef}
+        role="navigation" 
+        aria-label="Main Navigation"
         className="sticky top-0 left-0 w-full h-20 bg-white dark:bg-gray-900 border-b border-border z-[200] transition-all duration-300"
       >
         <div
@@ -63,37 +87,36 @@ const Navbar = ({
         >
           
           {/* Logo */}
-<Link to="/">
-  <div
-    className="
-      flex
-      items-center
-      justify-center
-      gap-3
-    "
-  >
-    <img
-      src="/Eventra.png"
-      alt="Eventra Logo"
-      className="
-        h-12
-        w-auto
-        object-contain
-      "
-    />
+          <Link to="/" aria-label="Eventra Home">
+            <div
+              className="
+                flex
+                items-center
+                justify-center
+                gap-3
+              "
+            >
+              <img
+                src="/Eventra.png"
+                alt="Eventra Logo"
+                className="
+                  h-12
+                  w-auto
+                  object-contain
+                "
+              />
 
-    <h1
-      className="
-        text-2xl
-        font-bold
-        text-text
-      "
-    >
-      Eventra
-    </h1>
-  </div>
-</Link>
-
+              <h1
+                className="
+                  text-2xl
+                  font-bold
+                  text-text
+                "
+              >
+                Eventra
+              </h1>
+            </div>
+          </Link>
 
           {/* Right Side */}
           <div className="flex items-center gap-4">
@@ -107,7 +130,7 @@ const Navbar = ({
             <button
               onClick={toggleTheme}
               aria-label="Toggle Theme"
-              className="theme-toggle relative flex items-center justify-center w-11 h-11 rounded-full bg-gray-200 dark:bg-gray-800 text-black dark:text-white shadow-md hover:scale-110 hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="theme-toggle relative flex items-center justify-center w-11 h-11 rounded-full bg-gray-200 dark:bg-gray-800 text-black dark:text-white shadow-md hover:scale-110 hover:shadow-lg transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               <div className="transition-transform duration-500">
                 {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -132,7 +155,7 @@ const Navbar = ({
         </div>
 
         {/* Scroll Progress Bar */}
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-transparent">
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-transparent" aria-hidden="true">
           <div
             className="h-full bg-blue-500 transition-all duration-100 ease-out"
             style={{ width: `${scrollProgress}%` }}
