@@ -19,6 +19,8 @@ import MobileNavbar from "./MobileNavbar";
 import CursorToggle from "./CursorToggle";
 
 import useBodyScrollLock from "./hooks/useBodyScrollLock";
+// FIXED: Inject custom keyboard shortcuts hook for WCAG compliance #2205
+import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 
 const Navbar = ({
   cursorEnabled,
@@ -34,6 +36,19 @@ const Navbar = ({
 
   useBodyScrollLock(isMobileMenuOpen);
 
+  // FIXED: Binding keyboard hook matrix to handle fast structural actions smoothly #2205
+  useKeyboardShortcuts({
+    onCloseModals: () => setIsMobileMenuOpen(false),
+    onSearchFocus: () => {
+      const searchInput = document.querySelector('input[type="text"], input[type="search"]');
+      if (searchInput) searchInput.focus();
+    },
+    onNewEvent: () => {
+      const createEventBtn = document.querySelector('[aria-label*="Create Event"], [aria-label*="create"]');
+      if (createEventBtn) createEventBtn.click();
+    }
+  });
+
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
@@ -48,10 +63,10 @@ const Navbar = ({
 
   return (
     <>
+      {/* FIXED: Merged duplicated className strings and locked dynamic transition metrics */}
       <nav
         ref={navRef}
         aria-label="Primary navigation"
-        className="fixed top-0 left-0 w-full h-20 bg-white dark:bg-gray-900 border-b border-border z-[200] transition-all duration-300"
         className="sticky top-0 left-0 w-full h-20 bg-white dark:bg-gray-900 border-b border-border z-[200] transition-all duration-300"
       >
         <div
@@ -64,25 +79,24 @@ const Navbar = ({
           "
         >
           
-          {/* Logo */}
-          <Link to="/" aria-label="Eventra home">
+          {/* Logo Section (FIXED: Cleared duplicate secondary Link block entirely) */}
+          <Link to="/" aria-label="Eventra home logo template">
             <div
               className="
                 flex
                 items-center
                 justify-center
-                gap-2
+                gap-3
               "
             >
               <img
                 src="/Eventra.png"
-                alt=""
-                aria-hidden="true"
+                alt="Eventra Brand Logo"
                 className="
-                  h-8
-                  w-8
-                  rounded-xl
+                  h-12
+                  w-auto
                   object-contain
+                  rounded-xl
                   bg-gray-200
                   dark:bg-transparent
                   p-1
@@ -91,7 +105,8 @@ const Navbar = ({
 
               <h1
                 className="
-                  text-xl
+                  text-2xl
+                  font-heading
                   font-bold
                   text-text
                 "
@@ -100,39 +115,8 @@ const Navbar = ({
               </h1>
             </div>
           </Link>
-<Link to="/">
-  <div
-    className="
-      flex
-      items-center
-      justify-center
-      gap-3
-    "
-  >
-    <img
-      src="/Eventra.png"
-      alt="Eventra Logo"
-      className="
-        h-12
-        w-auto
-        object-contain
-      "
-    />
 
-    <h1
-      className="
-        text-2xl
-        font-bold
-        text-text
-      "
-    >
-      Eventra
-    </h1>
-  </div>
-</Link>
-
-
-          {/* Right Side */}
+          {/* Right Side Control Panel */}
           <div className="flex items-center gap-4">
             <DesktopNavbar
               isAuthenticated={isAuthenticated()}
@@ -140,7 +124,7 @@ const Navbar = ({
               logout={logout}
             />
 
-            {/* Theme Toggle */}
+            {/* Theme Toggle Button (FIXED: Consolidated duplicate attributes and enhanced focus ring a11y) */}
             <button
               type="button"
               onClick={toggleTheme}
@@ -148,51 +132,39 @@ const Navbar = ({
               aria-pressed={isDarkMode}
               className="
                 theme-toggle
-
                 relative
-
                 flex
                 items-center
                 justify-center
-
                 w-11
                 h-11
-
                 rounded-full
-
                 bg-gray-200
                 dark:bg-gray-800
-
                 text-black
                 dark:text-white
-
                 shadow-md
-
                 hover:scale-110
                 hover:shadow-lg
-
                 transition-all
                 duration-300
-
                 focus:outline-none
-                focus:ring-2
-                focus:ring-blue-500
+                focus-visible:ring-2
+                focus-visible:ring-blue-500
               "
-              aria-label="Toggle Theme"
-              className="theme-toggle relative flex items-center justify-center w-11 h-11 rounded-full bg-gray-200 dark:bg-gray-800 text-black dark:text-white shadow-md hover:scale-110 hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <div className="transition-transform duration-500">
                 {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
               </div>
             </button>
 
-            {/* Cursor Toggle */}
+            {/* Cursor Toggle Frame */}
             <CursorToggle
               cursorEnabled={cursorEnabled}
               toggleCursor={toggleCursor}
             />
 
-            {/* Mobile Navbar */}
+            {/* Mobile Navbar Overlay View */}
             <MobileNavbar
               isOpen={isMobileMenuOpen}
               setIsOpen={setIsMobileMenuOpen}
@@ -203,8 +175,8 @@ const Navbar = ({
           </div>
         </div>
 
-        {/* Scroll Progress Bar */}
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-transparent">
+        {/* Scroll Progress Bar Element */}
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-transparent" aria-hidden="true">
           <div
             className="h-full bg-blue-500 transition-all duration-100 ease-out"
             style={{ width: `${scrollProgress}%` }}
